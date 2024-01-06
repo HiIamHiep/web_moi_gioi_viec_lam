@@ -10,4 +10,18 @@ class Company extends Model
     use HasFactory;
 
     public $timestamps = false;
+
+    protected $fillable = [
+        "address",
+        "address2",
+        "city",
+        "country",
+        "district",
+        "email",
+        "id",
+        "logo",
+        "name",
+        "phone",
+        "zipcode"
+    ];
 }

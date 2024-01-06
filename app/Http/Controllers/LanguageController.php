@@ -2,85 +2,34 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Models\Language;
-use App\Http\Requests\StoreLanguageRequest;
-use App\Http\Requests\UpdateLanguageRequest;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class LanguageController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    use ResponseTrait;
+
+    private object $model;
+
+    public function __construct()
     {
-        //
+        $this->model = Language::query();
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function index(Request $request): JsonResponse
     {
-        //
+        $query = $this->model;
+
+        if(!empty($request->get('q'))){
+            $query = $this->model
+                ->where('name', 'like', '%' . $request->get('q') . '%');
+        }
+
+        $data = $query->get();
+
+        return $this->successResponse($data);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreLanguageRequest  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(StoreLanguageRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Language  $language
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Language $language)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Language  $language
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Language $language)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateLanguageRequest  $request
-     * @param  \App\Models\Language  $language
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdateLanguageRequest $request, Language $language)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Language  $language
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Language $language)
-    {
-        //
-    }
 }

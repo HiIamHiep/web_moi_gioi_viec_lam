@@ -8,4 +8,21 @@ use Illuminate\Database\Eloquent\Model;
 class File extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        "user_id",
+        "link",
+        "post_id",
+        "type",
+    ];
+
+    public $timestamps = false;
+
+    protected static function booted()
+    {
+        static::creating(function ($object) {
+            $object->user_id = 1;
+//            $object->user_id = auth()->id;
+        });
+    }
 }
