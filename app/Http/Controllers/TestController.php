@@ -26,31 +26,8 @@ class TestController extends Controller
 
     public function index()
     {
-        $companyName = 'Da cap';
-        $language = '';
-        $city = 'HN';
-        $link = 'abc';
+        return currentUser();
 
-        if(!empty($companyName)) {
-            $companyId = Company::query()
-                ->firstOrCreate([
-                    'name' => $companyName,
-                ],[
-                    'city' => $city,
-                    'country' => 'Vietnam',
-                ])->id;
-        } else {
-            $companyId = null;
-        }
-
-
-        $post = Post::query()
-            ->create([
-                'job_title' => $language,
-                'company_id' => $companyId,
-                'city' => $city,
-                'status' => PostStatusEnum::ADMIN_APPROVED,
-            ]);
     }
 
 }

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\PostCurrencySalaryEnum;
 use App\Enums\PostStatusEnum;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 use Cviebrock\EloquentSluggable\Sluggable;
@@ -16,11 +18,20 @@ class Post extends Model
     use HasSlug;
 
     protected $fillable = [
-        'user_id',
-        'job_title',
-        'company_id',
         'city',
-        'status',
+        'company_id',
+        'currency_salary',
+        'district',
+        'end_date',
+        'is_parttime',
+        'job_title',
+        'max_salary',
+        'min_salary',
+        'number_applicants',
+        'pinned',
+        'remotable',
+        'requirement',
+        'start_date',
     ];
 
     public function getSlugOptions() : SlugOptions
@@ -33,18 +44,42 @@ class Post extends Model
     protected static function booted()
     {
         static::creating(function ($object) {
-            $object->user_id = 1;
-//            $object->user_id = auth()->user()->id;
+            $object->user_id = user()->id;
+            $object->status = 1;
         });
     }
 
-    public function getCurrencySalaryCodeAttribute()
+    public function getCurrencySalaryCodeAttribute(): string
     {
         return PostCurrencySalaryEnum::getKey($this->currency_salary);
     }
 
-    public function getStatusNameAttribute()
+    public function getStatusNameAttribute(): string
     {
         return PostStatusEnum::getKey($this->status);
     }
+
+    public function getLocationAttribute()
+    {
+        if(!empty($this->district)) {
+            return $this->district . ' - ' . $this->city;
+        }
+    }
+
+    public function languages(): MorphToMany
+    {
+        return $this->morphToMany(
+            Language::class,
+            'object',
+            ObjectLanguage::class,
+            'object_id',
+            'language_id',
+        );
+    }
+
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
 }

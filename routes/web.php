@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TestController;
-use App\Models\Company;
 use Illuminate\Support\Facades\Route;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -18,3 +17,16 @@ Route::get('/auth/redirect/{provider}', function ($provider) {
     return Socialite::driver($provider)->redirect();
 })->name('auth.redirect');
 Route::get('/auth/callback/{provider}', [AuthController::class, 'callback'])->name('auth.callback');
+
+Route::get('language/{locale?}', function ($locale = null) {
+    session()->flush(); // Khử session
+    if (in_array($locale, config('app.locales'))) {
+        app()->setLocale($locale);
+    }
+
+    session()->put('locale', $locale);
+    setcookie('locale', $locale, time() + (86400 * 30));
+
+    return redirect()->back();
+
+})->name('language');

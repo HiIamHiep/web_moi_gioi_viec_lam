@@ -7,7 +7,7 @@
     <meta content="A fully featured admin theme which can be used to build CRM, CMS, etc." name="description">
     <meta content="Coderthemes" name="author">
     <!-- App favicon -->
-    <link rel="shortcut icon" href="assets/images/favicon.ico">
+    <link rel="shortcut icon" href="">
 
     <!-- App css -->
     <link href="{{ asset('css/icons.min.css') }}" rel="stylesheet" type="text/css">
@@ -67,7 +67,6 @@
 <script src="{{ asset('js/vendor.min.js') }}"></script>
 <script src="{{ asset('js/app.min.js') }}"></script>
 <script src="{{ asset('js/helper.js') }}"></script>
-{{--<script src="{{ asset('js/helper.js') }}"></script>--}}
 @stack('js')
 
 </body>

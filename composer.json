@@ -9,8 +9,9 @@
     "license": "MIT",
     "require": {
         "php": "^7.4",
+        "barryvdh/laravel-translation-manager": "0.6.3",
         "bensampo/laravel-enum": "^4.2",
-        "cviebrock/eloquent-sluggable": "^8.0",
+        "cviebrock/eloquent-sluggable": "8.0.*",
         "doctrine/dbal": "^3.7",
         "fideloper/proxy": "^4.2",
         "fruitcake/laravel-cors": "^2.0",
@@ -51,7 +52,10 @@
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/"
-        }
+        },
+        "files": [
+            "app/functions.php"
+        ]
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

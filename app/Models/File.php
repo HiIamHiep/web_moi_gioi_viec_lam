@@ -21,8 +21,7 @@ class File extends Model
     protected static function booted()
     {
         static::creating(function ($object) {
-            $object->user_id = 1;
-//            $object->user_id = auth()->id;
+            $object->user_id = user()->id;
         });
     }
 }

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Language;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class LanguageController extends Controller
 {
@@ -20,14 +22,15 @@ class LanguageController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = $this->model;
+        $configs = SystemConfigController::getAndCache();
 
-        if(!empty($request->get('q'))){
-            $query = $this->model
-                ->where('name', 'like', '%' . $request->get('q') . '%');
-        }
+        $data = $configs['languages']->filter(function ($each) use ($request) {
+            if ($request->has('q')) {
+                return Str::contains(strtolower($each['name']), $request->get('q'));
 
-        $data = $query->get();
+            }
+            return true;
+        });
 
         return $this->successResponse($data);
     }
