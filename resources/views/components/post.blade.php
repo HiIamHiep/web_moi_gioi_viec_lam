@@ -7,54 +7,27 @@
                         <i class="fa fa-newspaper-o"></i> {{ $title }}
                     </h5>
                     <h4 class="card-title">
-                        <a href="#pablo">
+                        <a href="">
                             {{ $languages }}
                         </a>
                     </h4>
                     <p class="card-description">
-
+                        {{ $location }}
                     </p>
                     <div class="footer" style="display: flex; align-items: center; justify-content: space-between">
+                        @isset($company)
                         <div class="author" style="float:left;">
-                            <a href="#pablo">
+{{--                            @todo @pobby edit link company--}}
+                            <a href="#">
                                 <img src="{{ $company->logo }}" alt="..." class="avatar img-raised">
                                 <span>{{ $company->name }}</span>
                             </a>
                         </div>
+                        @endisset
                         <button type="button" name="button" class="btn btn-success btn-fill btn-round btn-rotate">
                             <i class="material-icons">refresh</i>
                         </button>
                     </div>
-                </div>
-            </div>
-
-            <div class="back" style="height: 328.875px; width: 359.99px;">
-                <div class="card-content">
-                    <br>
-                    <h5 class="card-title">
-                        {{ __('frontpage.location') }}
-                    </h5>
-                    <p class="card-description">
-                        {{ $location }}
-                    </p>
-                    <div class="footer text-center">
-                        <a href="#pablo" class="btn btn-rose btn-round">
-                            <i class="material-icons">subject</i> Read
-                        </a>
-                        <a href="#pablo" class="btn btn-just-icon btn-round btn-twitter">
-                            <i class="fa fa-twitter"></i>
-                        </a>
-                        <a href="#pablo" class="btn btn-just-icon btn-round btn-dribbble">
-                            <i class="fa fa-dribbble"></i>
-                        </a>
-                        <a href="#pablo" class="btn btn-just-icon btn-round btn-facebook">
-                            <i class="fa fa-facebook"></i>
-                        </a>
-                    </div>
-                    <br>
-                    <button type="button" name="button" class="btn btn-simple btn-round btn-rotate">
-                        <i class="material-icons">refresh</i> Back...
-                    </button>
                 </div>
             </div>
         </div>

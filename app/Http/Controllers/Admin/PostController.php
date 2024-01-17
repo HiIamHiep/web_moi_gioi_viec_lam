@@ -10,6 +10,7 @@ use App\Http\Controllers\SystemConfigController;
 use App\Http\Requests\Post\StoreRequest;
 use App\Imports\PostImport;
 use App\Models\Company;
+use App\Models\Language;
 use App\Models\ObjectLanguage;
 use App\Models\Post;
 use Illuminate\Http\Request;
@@ -100,11 +101,13 @@ class PostController extends Controller
             $post = $this->model->create($arr);
 
             foreach ($languages as $language) {
-                ObjectLanguage::query()->create([
-                   'language_id' => $language,
-                   'object_id' => $post->id,
-                   'type' => ObjectLanguageTypeEnum::POST,
-                ]);
+                $language = Language::query()->firstOrCreate(['name' => $language]);
+                ObjectLanguage::query()
+                    ->create([
+                        'object_id' => $post->id,
+                        'language_id' => $language->id,
+                        'object_type' => Post::class,
+                    ]);
             }
 
             DB::commit();

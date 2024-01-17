@@ -295,7 +295,10 @@
                         $("#div-error").hide();
                         $("#modal-company").modal("hide");
                         notifySuccess();
-                        window.location.href = '{{ route('admin.posts.index') }}';
+                        setTimeout(function () {
+                            window.location.href = '{{ route('admin.posts.index') }}'; //will redirect to your blog page (an ex: blog.html)
+                        }, 3000);
+
                     } else {
                         showError([response.message]);
                     }
@@ -379,7 +382,7 @@
                             results: $.map(data.data, function (item) {
                                 return {
                                     text: item.name,
-                                    id: item.id
+                                    id: item.name
                                 }
                             })
                         };
