@@ -24,6 +24,9 @@
                             </a>
                         </div>
                         @endisset
+                        <div>
+                            {{ $post->salary }}
+                        </div>
                         <button type="button" name="button" class="btn btn-success btn-fill btn-round btn-rotate">
                             <i class="material-icons">refresh</i>
                         </button>

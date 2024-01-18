@@ -6,6 +6,7 @@ use Illuminate\View\Component;
 
 class Post extends Component
 {
+    public ?object $post;
     public string $title;
     public string $languages;
     public ?object $company;
@@ -13,6 +14,7 @@ class Post extends Component
 
     public function __construct($post)
     {
+        $this->post = $post;
         $this->title = $post->job_title;
         $this->languages = implode(', ', $post->languages->pluck('name')->toArray());
         $this->company = $post->company;

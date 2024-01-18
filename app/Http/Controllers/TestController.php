@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PostCurrencySalaryEnum;
 use App\Enums\PostStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
@@ -9,6 +10,7 @@ use App\Models\Post;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
+use NumberFormatter;
 
 class TestController extends Controller
 {
@@ -26,7 +28,13 @@ class TestController extends Controller
 
     public function index()
     {
-        return currentUser();
+        $val = PostCurrencySalaryEnum::KRW;
+        $key = PostCurrencySalaryEnum::getKey($val);
+        $locale = PostCurrencySalaryEnum::getLocaleByVal($val);
+
+        $format = new NumberFormatter($locale, NumberFormatter::CURRENCY);
+        return $format->formatCurrency('123123', $key);
+
 
     }
 
