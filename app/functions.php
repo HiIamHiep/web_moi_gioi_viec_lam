@@ -7,7 +7,7 @@ use App\Models\Post;
 if (!function_exists('getRoleByKey')){
     function getRoleByKey($key): string
     {
-        return strtolower(UserRoleEnum::getKeys($key)[0]);
+        return strtolower(UserRoleEnum::getKeys((int)$key)[0]);
     }
 }
 
@@ -15,6 +15,20 @@ if (!function_exists('user')){
     function user(): ?object
     {
         return auth()->user();
+    }
+}
+
+if (!function_exists('isSuperAdmin')){
+    function isSuperAdmin(): bool
+    {
+        return user() && user()->role === UserRoleEnum::SUPER_ADMIN;
+    }
+}
+
+if (!function_exists('isAdmin')){
+    function isAdmin(): bool
+    {
+        return user() && user()->role === UserRoleEnum::ADMIN;
     }
 }
 

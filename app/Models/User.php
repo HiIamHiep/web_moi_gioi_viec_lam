@@ -58,6 +58,15 @@ class User extends Authenticatable
         'password',
     ];
 
+    protected static function booted()
+    {
+        static::creating(function ($object) {
+            $object->role = UserRoleEnum::APPLICANT;
+        });
+
+//        @todo @pobby tạo thêm trường hợp người dùng delete hết bài đăng của công ty đã có trong db
+    }
+
     public function company()
     {
         return $this->belongsTo(Company::class);

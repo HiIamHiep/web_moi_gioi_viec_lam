@@ -60,38 +60,35 @@
                     @guest
                         <div class="form-group">
                             <label for="fullname">Full Name</label>
-                            <input class="form-control" type="text" id="fullname" placeholder="Enter your name" required name="name">
+                            <input class="form-control" type="text" id="fullname" placeholder="Enter your name" required
+                                   name="name">
                         </div>
                         <div class="form-group">
                             <label for="emailaddress">Email address</label>
-                            <input class="form-control" type="email" id="emailaddress" placeholder="Enter your email" name="email">
+                            <input class="form-control" type="email" id="emailaddress" placeholder="Enter your email"
+                                   name="email">
                         </div>
                     @endguest
                     <div class="form-group">
                         <label for="password">Password</label>
-                        <input class="form-control" type="password" required id="password" placeholder="Enter your password" name="password">
+                        <input class="form-control" type="password" required id="password"
+                               placeholder="Enter your password" name="password">
                     </div>
                     <div class="form-group">
                         <div class="mt-2">
+                            @foreach($roles as $role => $val)
                             <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" name="role" class="custom-control-input" value="1" checked>
-                                <label class="custom-control-label" for="customRadio3">Applicant</label>
+                                <input type="radio" id="{{ $role }}" name="role" class="custom-control-input" value="{{ $val }}">
+                                <label class="custom-control-label" for="{{ $role }}">
+                                    {{ __('frontpage.'.$role)  }}
+                                </label>
                             </div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" name="role" class="custom-control-input" value="2">
-                                <label class="custom-control-label" for="customRadio4">HR</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="checkbox-signup">
-                            <label class="custom-control-label" for="checkbox-signup">I accept <a
-                                    href="javascript: void(0);" class="text-muted">Terms and Conditions</a></label>
+                            @endforeach
                         </div>
                     </div>
                     <div class="form-group mb-0 text-center">
-                        <button href="{{ route('registering') }}" class="btn btn-primary btn-block" type="submit"><i class="mdi mdi-account-circle"></i>
+                        <button href="{{ route('registering') }}" class="btn btn-primary btn-block" type="submit"><i
+                                class="mdi mdi-account-circle"></i>
                             Sign Up
                         </button>
                     </div>
@@ -100,13 +97,16 @@
                         <p class="text-muted font-16">Sign up using</p>
                         <ul class="social-list list-inline mt-3">
                             <li class="list-inline-item">
-                                <a href="{{ route('auth.redirect', ['provider' => 'github']) }}" class="social-list-item border-info text-info"><i class="mdi mdi-github-circle"></i></a>
+                                <a href="{{ route('auth.redirect', ['provider' => 'github']) }}"
+                                   class="social-list-item border-info text-info"><i class="mdi mdi-github-circle"></i></a>
                             </li>
                             <li class="list-inline-item">
-                                <a href="{{ route('auth.redirect', ['provider' => 'gitlab']) }}" class="social-list-item border-info text-info"><i class="mdi mdi-gitlab"></i></a>
+                                <a href="{{ route('auth.redirect', ['provider' => 'gitlab']) }}"
+                                   class="social-list-item border-info text-info"><i class="mdi mdi-gitlab"></i></a>
                             </li>
                             <li class="list-inline-item">
-                                <a href="javascript: void(0);" class="social-list-item border-info text-info"><i class="mdi mdi-linkedin"></i></a>
+                                <a href="javascript: void(0);" class="social-list-item border-info text-info"><i
+                                        class="mdi mdi-linkedin"></i></a>
                             </li>
                         </ul>
                     </div>
@@ -115,7 +115,8 @@
 
                 <!-- Footer-->
                 <footer class="footer footer-alt">
-                    <p class="text-muted">Already have account? <a href="{{ route('login') }}" class="text-muted ml-1"><b>Log
+                    <p class="text-muted">Already have account? <a href="{{ route('login') }}"
+                                                                   class="text-muted ml-1"><b>Log
                                 In</b></a></p>
                 </footer>
 

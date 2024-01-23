@@ -25,7 +25,7 @@ class RegisteringRequest extends FormRequest
             'role' => [
                 'required',
                 Rule::in([
-                   UserRoleEnum::APPLICATION,
+                   UserRoleEnum::APPLICANT,
                    UserRoleEnum::HR,
                 ]),
             ]
