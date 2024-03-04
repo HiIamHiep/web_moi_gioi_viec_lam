@@ -32,6 +32,10 @@ C. Ứng viên
 - Xem danh sách công việc ( có thể ghim và sắp xếp ngẫu nhiên )
 - Báo cáo vi phạm: công ty, cá nhân ( lừa đảo, spam, không liên hệ được, thông tin bài tuyển dụng sai )
 
+### Tài khoản mặc định admin
+hiepxuannguyen2001@gmail.com
+123123
+
 ### Phân tích chức năng
 
 | Các tác nhân | Nhà tuyển dụng |
