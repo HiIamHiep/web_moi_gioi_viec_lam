@@ -11,7 +11,7 @@ class CheckSlugRequest extends FormRequest
 
     public function authorize()
     {
-        return true;
+        return auth()->check();
     }
 
     public function rules(): array
@@ -21,7 +21,7 @@ class CheckSlugRequest extends FormRequest
                 'string',
                 'required',
                 'filled',
-                Rule::unique(Post::class),
+                Rule::unique(Post::class)->ignore($this->post),
             ],
         ];
     }

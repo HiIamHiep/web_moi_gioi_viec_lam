@@ -4,7 +4,7 @@
     <link rel="apple-touch-icon" sizes="76x76" href="">
     <link rel="icon" type="image/png" href="">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Ecommerce - Material Kit PRO by Creative Tim</title>
+    <title>{{ $title ?? config('app.name', 'Laravel')}}</title>
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
     <!--     Fonts and icons     -->
     <link rel="stylesheet" type="text/css"
@@ -13,6 +13,7 @@
     <!-- CSS Files -->
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/material-kit.css') }}" rel="stylesheet">
+    @stack('css')
 </head>
 <body class="ecommerce-page">
 <!-- navbar -->

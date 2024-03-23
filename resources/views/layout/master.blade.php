@@ -12,6 +12,14 @@
     <!-- App css -->
     <link href="{{ asset('css/icons.min.css') }}" rel="stylesheet" type="text/css">
     <link href="{{ asset('css/app-creative-dark.min.css') }}" rel="stylesheet" type="text/css">
+    <style>
+        .table-responsive-sm {
+            display: block;
+            width: 100%;
+            overflow-x: auto;;
+            -webkit-overflow-scrolling: touch;
+        }
+    </style>
     @stack('css')
 </head>
 

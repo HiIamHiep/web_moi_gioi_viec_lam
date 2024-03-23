@@ -1,6 +1,25 @@
 @extends('layout_frontpage.master')
+@push('css')
+    <style>
+        @media only screen and (max-width: 600px) {
+            .responsive-mobile {
+                display: flex;
+                justify-content: right ;
+            }
+            .fix-responsive-mobile {
+            }
+        }
+    </style>
+@endpush
 @section('content')
-    <h2 class="section-title">{{ __('frontpage.title') }}</h2>
+    <form class="navbar-form navbar-right responsive-mobile" action="#" method="get">
+        @csrf
+        @method('GET')
+        <div class="form-group form-white is-empty fix-responsive-mobile">
+            <input type="text" class="form-control" placeholder="Search" id="input-search-posts">
+            <span class="material-input"></span>
+        </div>
+    </form>
     <div class="row">
         <!-- sidebar -->
 
@@ -18,7 +37,7 @@
 
     </div>
     <ul class="pagination pagination-info" style="float: right;">
-        {{ $posts->links() }}
+        {{ $posts->appends(request()->all())->links() }}
     </ul>
 @endsection
 @push('js')
@@ -49,6 +68,35 @@
                     $('#input-min-salary').val(val);
                 }
             });
+
+            let timeOutSearchPosts = null;
+
+            // @todo @pobby update search job title with ajax
+            $('#input-search-posts').keyup(function() {
+                let that = $(this);
+                let inputText = that.val();
+                let textLength = inputText.length;
+
+                clearTimeout(timeOutSearchPosts);
+
+                timeOutSearchPosts = setTimeout(function () {
+                    if(textLength > 0) {
+                        $.ajax({
+                            url: '{{ route('applicant.index') }}',
+                            type: 'GET',
+                            dataType: 'json',
+                            data: { q: inputText },
+                            success: function(response) {
+
+                            },
+                            error: function (response) {
+
+                            }
+                        });
+                    }
+                }, 500)
+            });
+
         });
     </script>
 @endpush

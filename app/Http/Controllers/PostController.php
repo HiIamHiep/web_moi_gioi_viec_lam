@@ -25,9 +25,19 @@ class PostController extends Controller
         $this->model = Post::query();
     }
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $data = $this->model->paginate();
+        $search = $request->input('q');
+
+        $data = $this->model
+            ->latest();
+
+        if (!empty($search)){
+            $data->where('job_title', 'like' , '%' . $search . '%');
+        }
+
+        $data = $this->model
+            ->paginate();
         foreach ($data as $each) {
             $each->currency_salary = $each->currency_salary_code;
             $each->status = $each->status_name;
@@ -51,7 +61,7 @@ class PostController extends Controller
                 ->count();
 
             if($dem !== 0) {
-                $slug .= '-' . $dem;
+                $slug .= '-' . ++$dem ;
             }
 
             return $this->successResponse($slug);

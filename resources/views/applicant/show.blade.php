@@ -6,7 +6,7 @@
                 <div class="card-content">
                     <ul>
                         <li><i class="material-icons text-success">check</i>{{ $post->remotable_name }}</li>
-                        <li><i class="material-icons text-success">
+                        <li><i class="material-icons @if($post->can_parttime) text-success @else text-danger @endif ">
                                 @if($post->can_parttime)
                                     {{ 'check' }}
                                 @else
@@ -17,11 +17,16 @@
                         </li>
                         @isset($post->number_applicants)
                         <li><i class="material-icons text-danger"></i>Number applicants: {{ $post->number_applicants }}</li>
+                        <li><i class="material-icons text-danger"></i>Available:
+                            @if($post->is_not_available)
+                                {{ __('frontpage.not_available') }}
+                            @else
+                                {{ __('frontpage.available') }}
+                            @endif
+
+                        </li>
                         @endisset
                     </ul>
-                    <a href="#pablo" class="btn btn-primary btn-round">
-                        Get Started
-                    </a>
                 </div>
             </div>
         </div>

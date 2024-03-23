@@ -3,23 +3,29 @@
 namespace App\Imports;
 
 use App\Enums\FileTypeEnum;
+use App\Enums\PostLevelEnum;
 use App\Enums\PostRemotableEnum;
 use App\Enums\PostStatusEnum;
 use App\Models\Company;
 use App\Models\File;
 use App\Models\Language;
+use App\Models\ObjectLanguage;
 use App\Models\Post;
-use http\Client\Response;
-use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToArray;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Throwable;
 
 class PostImport implements ToArray, WithHeadingRow
 {
+    public string $levels;
+
+    public function __construct($levels)
+    {
+        $this->levels = $levels;
+    }
 
     public function array(array $array): void
     {
-
         foreach ($array as $each) {
             try {
                 $companyName = $each['cong_ty'];
@@ -57,23 +63,31 @@ class PostImport implements ToArray, WithHeadingRow
                     } else {
                         $companyId = null;
                     }
-
-                    $languages = explode(',', $language);
-                    foreach ($languages as $language) {
-                        Language::query()
-                            ->firstOrCreate([
-                                'name' => trim($language),
-                            ]);
-                    }
+                    $job_title = $this->generateJobTitle($city, $language, $companyName);
 
                     $post = Post::query()
                         ->firstOrCreate([
-                            'job_title' => $language,
+                            'job_title' => $job_title,
+                            'levels' => $this->levels,
                             'company_id' => $companyId,
                             'city' => $city,
                             'remotable' => $remotable,
                             'status' => PostStatusEnum::ADMIN_APPROVED,
                         ]);
+
+                    $languages = explode(',', $language);
+                    foreach ($languages as $language) {
+                        $objLanguage = Language::query()
+                            ->firstOrCreate([
+                                'name' => trim($language),
+                            ]);
+                        ObjectLanguage::query()
+                            ->create([
+                                'object_id' => $post->id,
+                                'language_id' => $objLanguage->id,
+                                'object_type' => Post::class,
+                            ]);
+                    }
 
                     File::query()
                         ->create([
@@ -83,9 +97,35 @@ class PostImport implements ToArray, WithHeadingRow
                         ]);
                 }
 
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 dd($each, $e);
             }
         }
+    }
+
+//    ($level - $city) $languages - $companyName
+    private function generateJobTitle($city, $language, $companyName): string
+    {
+        $levelVals = explode(',', $this->levels);
+        $levelKeys = array_map(function ($val) {
+            return PostLevelEnum::getKey($val);
+        }, $levelVals);
+
+        $levels = implode(', ', $levelKeys);
+        $title = '(';
+        $title .= $levels;
+
+        if($city){
+            $title .= ' - ' . $city ;
+        }
+
+        $title .= ') ';
+
+        $title .= $language;
+
+        if(!empty($companyName)){
+            $title .= ' - ' . $companyName;
+        }
+        return trim($title);
     }
 }

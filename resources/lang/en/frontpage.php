@@ -12,4 +12,9 @@ return array (
   'office_only' => 'office only',
   'hybrid' => 'hybrid',
   'all' => 'all',
+  'language' => 'language',
+  'role' => 'role',
+  'city' => 'city',
+  'company' => 'company',
+  'available' => 'available',
 );

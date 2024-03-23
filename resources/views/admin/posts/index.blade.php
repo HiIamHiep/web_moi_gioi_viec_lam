@@ -7,19 +7,17 @@
                     <a href="{{ route("admin.$table.create") }}" class="btn btn-primary">
                         Create
                     </a>
-                    <label for="csv" class="btn btn-info mb-0">
-                        Import csv
-                    </label>
-                    <input type="file" name="csv" id="csv" class="d-none"
-                           accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+                    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#modalCSV">
+                        Import CSV
+                    </button>
                     <nav class="float-right">
                         <ul class="pagination pagination-rounded mb-0" id="pagination">
 
                         </ul>
                     </nav>
                 </div>
-                <div class="card-body">
-                    <table class="table table-striped" id="table-data">
+                <div class="card-body table-responsive-sm">
+                    <table class="table table-striped table-centered mb-0" id="table-data">
                         <thead>
                         <tr>
                             <th>#</th>
@@ -32,9 +30,50 @@
                             <th>Status</th>
                             <th>Is Pinned</th>
                             <th>Created At</th>
+                            <th>Action</th>
                         </tr>
                         </thead>
+                        <tbody></tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal CSV -->
+    <div id="modalCSV" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Import CSV</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body form-horizontal">
+                    <div class="form-group">
+                        <label>Level</label>
+                        <select name="levels" class="form-control" id="select-level" multiple >
+                            @foreach($levels as $level => $value)
+                            <option value="{{ $value }}">
+                                {{ ucwords(strtolower($level)) }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>File</label>
+                        <input type="file"
+                               name="csv"
+                               id="csv"
+                               class="form-control"
+                               accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-primary" id="btn-import-csv">Import</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -43,64 +82,88 @@
 @push('js')
     <script>
         $(document).ready(function () {
+            $('#select-level').select2();
 
             // crawl data
             $.ajax({
                 url: '{{ route('api.posts') }}',
                 dataType: 'json',
-                data: { page: {{ request('page') ?? '1' }}},
+                data: {page: {{ request('page') ?? '1' }}},
                 success: function (response) {
+                    let table = $('#table-data tbody');
                     response.data.data.forEach(function (each) {
-                        let location = each.district + ' - ' + each.city;
-                        let remotable = each.remotable ? 'x' : '';
-                        let is_parttime = each.is_parttime ? 'x' : '';
-                        let range_salary = (each.min_salary && each.max_salary) ? each.min_salary + ' - ' + each.max_salary : '';
-                        let range_date = (each.start_date && each.end_date) ? each.start_date + ' - ' + each.end_date : '';
-                        let is_pinned = each.is_pinned ? 'x' : '';
-                        let created_at = convertDateToDateTime(each.created_at);
-                        $('#table-data').append($('<tr>')
-                            .append($('<td>').append(each.id))
-                            .append($('<td>').append(each.job_title))
-                            .append($('<td>').append(location))
-                            .append($('<td>').append(remotable))
-                            .append($('<td>').append(is_parttime))
-                            .append($('<td>').append(range_salary))
-                            .append($('<td>').append(range_date))
-                            .append($('<td>').append(each.status))
-                            .append($('<td>').append(is_pinned))
-                            .append($('<td>').append(created_at))
-                        )
+                        renderPostsData(each, table);
                     });
-                    response.data.pagination.forEach(function (each) {
-                        $("#pagination").append($('<li>').attr('class', `page-item ${each.active ? 'active' : ''}`)
-                            .append(`<a href="${each.url}" class="page-link">${each.label}</a>`)
-                        )
-                    })
+                    renderPagination(response.data.pagination);
                 },
                 error: function (response) {
-                    $.toast({
-                        heading: 'Error',
-                        text: response.responseJSON.message,
-                        showHideTransition: 'slide',
-                        position: 'bottom-right',
-                        icon: 'error'
-                    });
+                    notifyError(response.responseJSON.message);
                 }
             });
 
             $(document).on('click', '#pagination a', function (event) {
                 event.preventDefault();
                 let page = $(this).text();
-                console.log(page);
                 const urlParams = new URLSearchParams(window.location.search);
 
                 urlParams.set('page', page);
                 window.location.search = urlParams;
             })
 
-            $("#csv").change(function (event) {
+            //delete post
+            $(document).on('click', '#delete-post', function (event) {
+                event.preventDefault();
+                let route = $('#delete-post').attr('action');
+                $.ajax({
+                    url: route,
+                    type: 'DELETE',
+                    dataType: 'json',
+                    success: function (response) {
+                        if(response.success) {
+                            notifySuccess("Delete success");
+                            setTimeout(function () {
+                                window.location.href = '{{ route('admin.posts.index') }}'; //will redirect to your blog page (an ex: blog.html)
+                            }, 3000);
+
+                        } else {
+                            showError([response.message]);
+                        }
+                    },
+                    error: function (response) {
+                        let errors;
+                        if(response.responseJSON.errors){
+                            errors = Object.values(response.responseJSON.errors);
+                        } else {
+                            errors = response.responseJSON.message;
+                        }
+                        showError(errors);
+                    }
+                });
+
+            })
+
+            function showError(errors) {
+                let string = '<ul>';
+                if(Array.isArray(errors)) {
+                    errors.forEach(function (each, index) {
+                        each.forEach(function (error) {
+                            string += `<li>${error}</li>` ;
+                        });
+                    });
+                } else {
+                    string += `<li>${errors}</li>` ;
+                }
+                string += '</ul>';
+
+                $("#div-error").html(string);
+                $("#div-error").removeClass("d-none").show();
+                notifyError(string);
+            }
+
+            $("#btn-import-csv").click(function (event) {
                 var formData = new FormData();
-                formData.append('file', $(this)[0].files[0]);
+                formData.append('file', $('#csv')[0].files[0]);
+                formData.append('levels', $('#select-level').val());
                 $.ajax({
                     url: '{{ route('admin.posts.import_csv') }}',
                     type: 'POST',
@@ -112,13 +175,11 @@
                     contentType: false,
                     processData: false,
                     success: function (response) {
-                        $.toast({
-                            heading: 'Success',
-                            text: 'Import file csv success',
-                            showHideTransition: 'slide',
-                            position: 'bottom-right',
-                            icon: 'success'
-                        });
+                        notifySuccess('Import file csv success');
+                        $('#modalCSV').modal('hide');
+                        setTimeout(function () {
+                            window.location.href = '{{ route('admin.posts.index') }}'; //will redirect to your blog page (an ex: blog.html)
+                        }, 3000);
                     },
                     error: function (response) {
 

@@ -12,4 +12,9 @@ return array (
   'office_only' => 'chỉ làm tại văn phòng',
   'hybrid' => 'làm việc linh hoạt',
   'all' => 'tất cả',
+  'language' => 'ngôn ngữ',
+  'role' => 'vai trò',
+  'city' => 'thành phố',
+  'company' => 'công ty',
+  'available' => 'đang mở',
 );

@@ -18,7 +18,7 @@
                         </a>
                     </h5>
                     <h4 class="card-title">
-                        <a href="">
+                        <a href="#">
                             {{ $languages }}
                         </a>
                     </h4>
@@ -30,7 +30,9 @@
                             <div class="author" style="float:left;">
                                 {{--                            @todo @pobby edit link company--}}
                                 <a href="#">
-                                    <img src="{{ $company->logo }}" alt="..." class="avatar img-raised">
+                                    <img src="
+                                    @if($company->logo){{ $company->logo }}@else{{ asset('storage/images/default/logo.png') }}@endif
+                                    " alt="..." class="avatar img-raised">
                                     <span>{{ $company->name }}</span>
                                 </a>
                             </div>

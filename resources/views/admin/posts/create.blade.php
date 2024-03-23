@@ -67,10 +67,13 @@
                                 <label>Number Applicant</label>
                                 <input type="number" class="form-control" name="number_applicant">
                                 <br>
-                                <input type="checkbox" id="remote" name="remotables[]" checked data-switch="success"/>
-                                <label for="remote" data-on-label="Can remote" data-off-label="No remote"></label>
-                                <input type="checkbox" id="office" name="remotables[]" checked data-switch="success"/>
-                                <label for="office" data-on-label="Office" data-off-label="No Office"></label>
+                                <select name="remotable" class="form-control">
+                                    @foreach($remotables as $key => $value)
+                                        <option value="{{ $value }}">
+                                            {{ __('frontpage.'. strtolower($key)) }}
+                                        </option>
+                                    @endforeach
+                                </select>
                                 <br>
                                 <input type="checkbox" name="can_parttime" id="can_parttime" checked data-switch="info"/>
                                 <label for="can_parttime" data-on-label="Can Part-time" data-off-label="No Part-time"></label>
@@ -187,6 +190,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.js"></script>
     <script src="{{ asset('js/summernote-bs4.min.js') }}"></script>
     <script>
+        {{-- ($level - $city) $languages - $companyName --}}
         function generateTitle() {
             const city = $("#select-city :selected").text();
             const company = $("#select-company :selected").text();
@@ -224,7 +228,8 @@
             if(!path){
                 return;
             }
-            const response = await fetch(' {{ asset('locations/') }} ' + path);
+
+            const response = await fetch('{{ asset('locations/') }}' + path);
             const districts = await response.json();
             let string = '';
             const selectedValue = $("#select-district").val();
@@ -317,7 +322,7 @@
 
         $(document).ready(async function () {
             $("#text-requirement").summernote();
-            $("#select-city").select2({ tags: true});
+            $("#select-city").select2();
             $("#city").select2({ tags: true});
             const response = await fetch('{{ asset('locations/index.json') }}');
             const cities = await response.json();
@@ -335,9 +340,10 @@
                 loadDistrict($(this).parents('.select-location'));
             })
 
-            $("#select-district").select2();
-            $("#district").select2();
+            $("#select-district").select2({ tags: true });
+            $("#district").select2({ tags: true });
             await loadDistrict($("#select-city").parents('.select-location'));
+
 
             $("#select-company").select2({
                 tags: true,

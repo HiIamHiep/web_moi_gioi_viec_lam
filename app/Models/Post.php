@@ -6,7 +6,6 @@ use App\Enums\PostCurrencySalaryEnum;
 use App\Enums\PostRemotableEnum;
 use App\Enums\PostStatusEnum;
 use App\Enums\SystemCacheKeyEnum;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
@@ -32,8 +31,8 @@ use NumberFormatter;
  * @property float|null $max_salary
  * @property int|null $currency_salary
  * @property string|null $requirement
- * @property string|null $start_date
- * @property string|null $end_date
+ * @property \Illuminate\Support\Carbon|null $start_date
+ * @property \Illuminate\Support\Carbon|null $end_date
  * @property int|null $number_applicants
  * @property int $status
  * @property int $pinned
@@ -44,6 +43,7 @@ use NumberFormatter;
  * @property-read \App\Models\Company|null $company
  * @property-read \App\Models\File|null $file
  * @property-read string $currency_salary_code
+ * @property-read bool $is_not_available
  * @property-read string|null $location
  * @property-read string|null $remotable_name
  * @property-read string|null $salary
@@ -52,6 +52,7 @@ use NumberFormatter;
  * @property-read int|null $languages_count
  * @method static \Illuminate\Database\Eloquent\Builder|Post approved()
  * @method static \Database\Factories\PostFactory factory(...$parameters)
+ * @method static \Illuminate\Database\Eloquent\Builder|Post indexHomePage($request)
  * @method static \Illuminate\Database\Eloquent\Builder|Post newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Post newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Post query()
@@ -115,8 +116,8 @@ class Post extends Model
             $city = $object->city;
             $arr = explode(', ', $city);
             $arrCity = getAndCachePostCities();
-            foreach ($arr as $item){
-                if(in_array($item, $arrCity)){
+            foreach ($arr as $item) {
+                if (in_array($item, $arrCity)) {
                     continue;
                 }
                 $arrCity[] = $item;
@@ -127,7 +128,7 @@ class Post extends Model
 //        @todo @pobby tạo thêm trường hợp người dùng delete hết bài đăng của công ty đã có trong db
     }
 
-    public function getSlugOptions() : SlugOptions
+    public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
             ->generateSlugsFrom('job_title')
@@ -167,8 +168,8 @@ class Post extends Model
 
     public function getLocationAttribute(): ?string
     {
-        if(!empty($this->district)) {
-            return $this->district . ', ' . $this->city;
+        if (!empty($this->district)) {
+            return $this->district.', '.$this->city;
         }
         return $this->city;
     }
@@ -176,13 +177,8 @@ class Post extends Model
     public function getRemotableNameAttribute(): ?string
     {
         $key = PostRemotableEnum::getKey($this->remotable);
-        $arr = explode('_', $key);
-        $str = '';
-        foreach ($arr as $item){
-            $str .= Str::title($item) . ' ';
-        }
 
-        return $str;
+        return Str::title(str_replace('_', ' ', $key));
     }
 
     public function getSalaryAttribute(): ?string
@@ -194,29 +190,29 @@ class Post extends Model
 
         $rate = Config::getBykey($key);
 
-        if(!is_null($this->min_salary)){
+        if (!is_null($this->min_salary)) {
             $salary = $this->min_salary * $rate;
             $minSalary = $format->formatCurrency($salary, $key);
         }
 
-        if(!is_null($this->max_salary)){
+        if (!is_null($this->max_salary)) {
             $salary = $this->max_salary * $rate;
             $maxSalary = $format->formatCurrency($salary, $key);
         }
 
-        if(!empty($minSalary) && !empty($maxSalary)){
-            return $minSalary . ' - ' . $maxSalary;
+        if (!empty($minSalary) && !empty($maxSalary)) {
+            return $minSalary.' - '.$maxSalary;
         }
 
-        if (!empty($minSalary)){
-            return __('frontpage.from_salary') .  ' ' .  $minSalary;
+        if (!empty($minSalary)) {
+            return __('frontpage.from_salary').' '.$minSalary;
         }
 
-        if (!empty($maxSalary)){
-            return __('frontpage.to_salary') . ' ' . $maxSalary;
+        if (!empty($maxSalary)) {
+            return __('frontpage.to_salary').' '.$maxSalary;
         }
 
-        return '' ;
+        return '';
     }
 
     public function scopeApproved($query)
@@ -226,10 +222,10 @@ class Post extends Model
 
     public function getIsNotAvailableAttribute(): bool
     {
-        if(empty($this->start_date)){
+        if (empty($this->start_date)) {
             return false;
         }
-        if(empty($this->end_date)){
+        if (empty($this->end_date)) {
             return false;
         }
 
@@ -237,5 +233,58 @@ class Post extends Model
 
         return !$now->between($this->start_date, $this->end_date);
     }
+
+    public function scopeIndexHomePage($query, $filters)
+    {
+        return $query->with([
+            'languages',
+            'company' => function ($q) {
+                $q->select([
+                    'id',
+                    'name',
+                    'logo',
+                ]);
+            },
+        ])
+            ->approved()
+            ->when(isset($filters['cities']), function ($q) use ($filters) {
+                $q->where(function ($q) use ($filters) {
+                    foreach ($filters['cities'] as $city) {
+                        $q->orWhere('city', 'like', '%'.$city.'%');
+                    }
+                    $q->orWhereNull('city');
+                });
+            })
+            ->when(isset($filters['min_salary']), function ($q) use ($filters) {
+                $q->where(function ($q) use ($filters) {
+                    $q->orWhere('min_salary', '>=', $filters['min_salary']);
+                    $q->orWhereNull('min_salary');
+                });
+            })
+            ->when(isset($filters['max_salary']), function ($q) use ($filters) {
+                $q->where(function ($q) use ($filters) {
+                    $q->orWhere('max_salary', '<=', $filters['max_salary']);
+                    $q->orWhereNull('max_salary');
+                });
+            })
+            ->when(isset($filters['remotable']), function ($q) use ($filters) {
+                $q->where('remotable', $filters['remotable']);
+            })
+            ->when(isset($filters['can_parttime']), function ($q) use ($filters) {
+                $q->where('can_parttime', $filters['can_parttime']);
+            })
+            ->when(isset($filters['languages']), function ($q) use ($filters) {
+                $q->whereHas('languages', function ($q) use ($filters) {
+                    $q->whereIn('name', $filters['languages']);
+                });
+            })
+            ->when(isset($filters['job_title']), function ($q) use ($filters) {
+                $q->where('job_title', 'like' , '%' . $filters['job_title'] . '%');
+            })
+            ->orderByDesc('pinned')
+            ->orderByDesc('id');
+
+    }
+
 
 }

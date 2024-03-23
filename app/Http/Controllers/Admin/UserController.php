@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\UserRoleEnum;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\ResponseTrait;
 use App\Models\Company;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -15,6 +16,8 @@ class UserController extends Controller
     private object $model;
     private string $table;
 
+    use ResponseTrait;
+
     public function __construct()
     {
         $this->model = User::query();
@@ -25,66 +28,90 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
+        $currentUser = auth()->user()->id;
 
-        // Where role cách 1 ( nhanh )
+        $selectedRole    = $request->input('role');
+        $selectedCity    = $request->input('city');
+        $selectedCompany = $request->input('company');
+
         $query = $this->model->clone()
+            ->with('company:id,name')
+            ->latest();
+
+        if (!is_null($selectedRole)) {
+            $query->where('role', $selectedRole);
+        }
+        if (!is_null($selectedCity)) {
+            $query->where('city', $selectedCity);
+        }
+        if (!is_null($selectedCompany)) {
+            $query->whereHas('company', function ($q) use ($selectedCompany) {
+                return $q->where('id', $selectedCompany);
+            });
+        }
+
+        $query->where('id', '!=', $currentUser);
+
+        $data = $query
+            ->paginate()
+            ->appends($request->all());
+
+
+        $roles = UserRoleEnum::asArray();
+
+        $companies = Company::query()
+            ->get([
+                'id',
+                'name',
+            ]);
+
+        $cities = $this->model->clone()
+            ->distinct()
+            ->limit(10)
+            ->whereNotNull('city')
+            ->pluck('city');
+
+        return view("admin.$this->table.index", [
+            'data'            => $data,
+            'roles'           => $roles,
+            'cities'          => $cities,
+            'companies'       => $companies,
+            'selectedRole'    => $selectedRole,
+            'selectedCity'    => $selectedCity,
+            'selectedCompany' => $selectedCompany,
+        ]);
+    }
+
+    public function getUserWithAjax(Request $request)
+    {
+        // Where role cách 1 ( nhanh )
+        $query = $this->model
             ->with('company:id,name')
             ->latest();
 
         $selectedRole = $request->get('role');
         $selectedCity = $request->get('city');
         $selectedCompany = $request->get('company');
+        $searchUserName = $request->input('q');
 
-        if (!empty($selectedRole) && $selectedRole !== 'All') {
+        if (!is_null($searchUserName)) {
+            $query->where('name', 'like', '%'. $searchUserName .'%');
+        }
+
+        if (!is_null($selectedRole)) {
             $query->where('role', $selectedRole);
         }
-
-        if (!empty($selectedCity) && $selectedCity !== 'All') {
+        if (!is_null($selectedCity)) {
             $query->where('city', $selectedCity);
         }
-
-        if (!empty($selectedCompany) && $selectedCompany !== 'All') {
+        if (!is_null($selectedCompany)) {
             $query->whereHas('company', function ($q) use ($selectedCompany) {
                 return $q->where('id', $selectedCompany);
             });
         }
-
         $data = $query->paginate();
 
-        //Where role cách 2 ( chậm )
-        /*
-         $query = $this->model
-            ->when($request->has('role'), function ($q) use ($request) {
-                return $q->where('role', $request->get('role'));
-            })
-            ->with('company:id,name')
-            ->latest()
-            ->paginate();
-         */
-
-        $roles = UserRoleEnum::asArray();
-
-        $cities = $this->model->clone()
-            ->distinct()
-            ->limit(10)
-            ->pluck('city');
-
-        $companies = Company::query()
-            ->select([
-                'id',
-                'name',
-            ])
-            ->get();
-
-        return view("admin.$this->table.index", [
-            'data' => $data,
-            'roles' => $roles,
-            'cities' => $cities,
-            'companies' => $companies,
-            'selectedRole' => $selectedRole,
-            'selectedCity' => $selectedCity,
-            'selectedCompany' => $selectedCompany,
-        ]);
+        return $this->successResponse($data);
     }
 
     public function show()

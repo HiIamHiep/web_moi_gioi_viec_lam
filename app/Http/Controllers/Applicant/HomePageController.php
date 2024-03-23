@@ -6,6 +6,7 @@ use App\Enums\PostRemotableEnum;
 use App\Enums\PostStatusEnum;
 use App\Enums\SystemCacheKeyEnum;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Applicant\HomePage\IndexRequest;
 use App\Models\Company;
 use App\Models\Config;
 use App\Models\Post;
@@ -14,77 +15,70 @@ use Illuminate\Support\Facades\DB;
 
 class HomePageController extends Controller
 {
-    public function index(Request $request)
+    public function index(IndexRequest $request)
     {
-        $searchCities = $request->get('cities', []);
+
+        $searchCities = $request->input('cities', []);
 
         $arrCity = getAndCachePostCities();
+        $arrLanguage = getAndCacheLanguages();
         $configs = Config::getAndCache(0);
-        $minSalary = $request->get('min_salary', $configs['filter_min_salary']);
-        $maxSalary = $request->get('max_salary', $configs['filter_max_salary']);
+        $minSalary = $request->input('min_salary', $configs['filter_min_salary']);
+        $maxSalary = $request->input('max_salary', $configs['filter_max_salary']);
+        $remotable = $request->input('remotable');
+        $searchCanParttime = $request->boolean('can_parttime');
+        $searchLanguages = $request->input('languages', []);
+        $searchJobTitle = $request->input('q');
 
-        $query = Post::query()
-            ->with([
-                'languages',
-                'company' => function ($q) {
-                    return $q->select([
-                        'id',
-                        'name',
-                        'logo',
-                    ]);
-                },
-            ])
-            ->approved()
-            ->orderByDesc('pinned')
-            ->orderByDesc('id');
-        // Cách select theo group where or where tiện
+        $filters = [];
+
         if (!empty($searchCities)) {
-            $query->where(function ($q) use ($searchCities) {
-                foreach ($searchCities as $searchCity) {
-                    $q->orWhere('city', 'like', '%'.$searchCity.'%');
-                }
-                $q->orWhereNull('city');
-
-                return $q;
-            });
+            $filters['cities'] = $searchCities;
         }
-
         if (!empty($minSalary)) {
-            $query->where(function ($q) use ($minSalary) {
-                $q->orWhere('min_salary', '>=', $minSalary);
-                $q->orWhereNull('min_salary');
-
-            });
+            $filters['min_salary'] = $minSalary;
         }
-
         if (!empty($maxSalary)) {
-            $query->where(function ($q) use ($maxSalary) {
-                $q->orWhere('max_salary', '<=', $maxSalary);
-                $q->orWhereNull('max_salary');
-            });
+            $filters['max_salary'] = $maxSalary;
         }
-
-        $remotable = $request->get('remotable');
 
         if (!empty($remotable)){
-            $query->where('remotable', $remotable);
+            $filters['remotable'] = $remotable;
         }
 
-        $posts = $query->paginate();
+        if (!empty($searchCanParttime)){
+            $filters['can_parttime'] = $searchCanParttime;
+        }
+
+        if (!empty($searchLanguages)){
+            $filters['languages'] = $searchLanguages;
+        }
+
+        if (!empty($searchJobTitle)){
+            $filters['job_title'] = $searchJobTitle;
+        }
+
+        $posts = Post::query()
+            ->IndexHomePage($filters)
+            ->paginate();
 
         $filterPostRemotable = PostRemotableEnum::getArrWithLowerKey();
 
         return view('applicant.index', [
             'posts' => $posts,
             'arrCity' => $arrCity,
+            'arrLanguage' => $arrLanguage,
             'searchCities' => $searchCities,
             'configs' => $configs,
             'minSalary' => $minSalary,
             'maxSalary' => $maxSalary,
             'remotable' => $remotable,
             'filterPostRemotable' => $filterPostRemotable,
+            'searchCanParttime' => $searchCanParttime,
+            'searchLanguages' => $searchLanguages,
         ]);
     }
+
     public function show($postId)
     {
         $post =  Post::query()
@@ -100,9 +94,11 @@ class HomePageController extends Controller
             ->approved()
             ->findOrFail($postId);
 
+        $title = $post->job_title;
 
         return view('applicant.show', [
             'post' => $post,
+            'title' => $title,
         ]);
     }
 }

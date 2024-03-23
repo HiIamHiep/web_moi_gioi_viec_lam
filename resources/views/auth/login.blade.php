@@ -41,15 +41,16 @@
                 <p class="text-muted mb-4">Enter your email address and password to access account.</p>
 
                 <!-- form -->
-                <form action="#">
+                <form action="{{ route("logining") }}" method="POST">
+                    @csrf
                     <div class="form-group">
                         <label for="emailaddress">Email address</label>
-                        <input class="form-control" type="email" id="emailaddress" required="" placeholder="Enter your email">
+                        <input class="form-control" type="email" name="email" required placeholder="Enter your email">
                     </div>
                     <div class="form-group">
                         <a href="pages-recoverpw-2.html" class="text-muted float-right"><small>Forgot your password?</small></a>
                         <label for="password">Password</label>
-                        <input class="form-control" type="password" required="" id="password" placeholder="Enter your password">
+                        <input class="form-control" type="password" name="password" required placeholder="Enter your password">
                     </div>
                     <div class="form-group mb-3">
                         <div class="custom-control custom-checkbox">

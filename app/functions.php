@@ -2,6 +2,7 @@
 
 use App\Enums\SystemCacheKeyEnum;
 use App\Enums\UserRoleEnum;
+use App\Models\Language;
 use App\Models\Post;
 
 if (!function_exists('getRoleByKey')){
@@ -44,6 +45,9 @@ if (!function_exists('getPostCities')){
                 }
                 $arr = explode(', ', $city);
                 foreach ($arr as $item){
+                    if (empty($item)){
+                        continue;
+                    }
                     if(in_array($item, $arrCity)){
                         continue;
                     }
@@ -51,6 +55,27 @@ if (!function_exists('getPostCities')){
                 }
             }
             return $arrCity;
+        });
+    }
+}
+
+if (!function_exists('getAndCacheLanguages')){
+    function getAndCacheLanguages(): array
+    {
+        return cache()->remember(SystemCacheKeyEnum::LANGUAGES, 86400 * 30, function () {
+            $languages = Language::query()->pluck('name');
+            $arrLanguage = [];
+            foreach ($languages as $language) {
+                if (empty($language)){
+                    continue;
+                }
+                if(in_array($language, $arrLanguage)) {
+                    continue;
+                }
+
+                $arrLanguage[] = $language;
+            }
+            return $arrLanguage;
         });
     }
 }
